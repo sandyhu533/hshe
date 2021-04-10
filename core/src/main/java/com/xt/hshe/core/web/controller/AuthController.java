@@ -43,4 +43,22 @@ public class AuthController extends BaseController {
         }
     }
 
+    @PostMapping("/register")
+    public HttpMsg TaddTeacher(HttpServletRequest request) {
+        String roleFlag = request.getParameter("role");
+        Assert.hasText(roleFlag, "请选择身份!");
+        String id = (String) request.getParameter("id");
+        Assert.hasText(id, "工号不能为空!");
+        String password = (String) request.getParameter("password");
+        Assert.hasText(password, "密码不能为空!");
+
+        int result = authService.register(Consts.Role.TEACHER, id, password, 0l);
+        if (result == Consts.Auth.REGISTER_HAS_EXIST) {
+            return new HttpMsg<>(result, "该工号已存在");
+        } else {
+            return new HttpMsg<>(result, "注册成功~");
+        }
+
+    }
+
 }
