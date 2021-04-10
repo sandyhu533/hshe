@@ -5,7 +5,7 @@ Vue.component('my-header', {
 <div class="ui container">
     <a href="/" class="header item">
         <!-- <img class="logo" src="logo.png"> -->
-        HSHE Project
+        代码作业管理与分析系统
     </a>
 
     <a href="/topic" class="item">作业</a>
@@ -58,7 +58,7 @@ Vue.component('my-footer', {
             <a class="item" href="#">Site Map</a>
             <a class="item" href="#">Contact Us</a>
             <a class="item" href="#">Terms and Conditions</a>
-            <a class="item" href="#">Copyright © 2018 HSHE</a>
+            <a class="item" href="#">Copyright © 2018 Shanshan</a>
         </div>
     </div>
 </div>`
