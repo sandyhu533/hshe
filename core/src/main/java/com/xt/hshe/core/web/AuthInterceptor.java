@@ -63,7 +63,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
             String info = AES.Decrypt(token, sKey);//格式 0#140705202#1456789123456
             //token 非法
-            String tokenRgx = "[012]#[0-9]{8,9}#[0-9]{13}";//教师工号可以8-9位
+            String tokenRgx = "[012]#[0-9]{8,9,13}#[0-9]{13}";//教师/学生工号可以8-9,13位
             if (info==null || !info.matches(tokenRgx)){
 //                response.setStatus(400);
 //                response.setContentType("text/html;charset=UTF-8");
