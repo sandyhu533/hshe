@@ -46,7 +46,7 @@ public class JudgeService {
      * 判题程序入口
      * @param sid 提交ID
      */
-    public void judge(Long sid) throws IOException, InterruptedException {
+    public int judge(Long sid) throws IOException, InterruptedException {
         Submission s = submissionRepository.findOne(sid);
         //查询题目时间内存要求
         Problem p = problemRepository.findOne(s.getProblemId());
@@ -54,7 +54,7 @@ public class JudgeService {
         LOGGER.info("Received a judge task[submission #"+sid+" ], begin to compile.");
         if (compileHandler.compile(s) != 0) {
             submissionRepository.updateJudged(sid, Consts.Judge.CE, 0, 0);
-            return;
+            return Consts.Judge.CE;
         }
         //通过编译，可执行文件已生成，抓取测试用例并保存文件
         List<TestPoint> testPoints = testPointRepository.findAllByProblemId(s.getProblemId());
@@ -63,6 +63,7 @@ public class JudgeService {
         //运行
         Map<String, Integer> result = judgeHandler.judge(s,p,testPoints);
         submissionRepository.updateJudged(sid, result.get("result"), result.get("usedMemory"), result.get("usedTime"));
+        System.out.println("updateJudged sid:" + sid + " res:" + result.get("result"));
 
         // TODO: 2018/3/8 If result=AC, send ToEval
         if (Consts.Judge.AC == result.get("result")) {
@@ -70,5 +71,6 @@ public class JudgeService {
             redisTemplate.opsForValue().increment("acceptnum:"+p.getId(), 1);
             redisTemplate.opsForSet().add("acceptuser:"+p.getId(), s.getUserId());
         }
+        return result.get("result");
     }
 }

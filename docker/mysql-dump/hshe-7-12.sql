@@ -23,6 +23,8 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/ `hshe` /*!40100 DEFAULT CHARACTER SET l
 
 USE `hshe`;
 
+set session transaction isolation level read committed;
+
 --
 -- Table structure for table `classes`
 --
@@ -166,7 +168,7 @@ DROP TABLE IF EXISTS `submission`;
 CREATE TABLE `submission` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
   `problem_id` bigint(20) NOT NULL,
-  `user_id` varchar(9) NOT NULL,
+  `user_id` varchar(15) NOT NULL,
   `lang` varchar(10) NOT NULL,
   `src` varchar(9999) DEFAULT NULL,
   `create_time` varchar(15) NOT NULL,

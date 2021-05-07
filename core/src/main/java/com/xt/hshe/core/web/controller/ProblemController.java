@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.constraints.AssertTrue;
+
 import java.util.List;
 import java.util.Map;
 
@@ -66,16 +68,25 @@ public class ProblemController extends BaseController{
         Assert.hasText(timeLimit, "时间限制不能为空!");
         String memoryLimit = String.valueOf(map.get("memory_limit"));
         Assert.hasText(memoryLimit, "内存限制不能为空!");
-        String testsCount = String.valueOf(map.get("tests_count"));
-        Assert.hasText(testsCount, "测试用例缺失!");
+        // String testsCount = String.valueOf(map.get("tests_count"));
+        // Assert.hasText(testsCount, "测试用例缺失!");
         String creator = (String) request.getAttribute("user_id");
         long problemId = problemService.addProblem(title, Long.parseLong(topicId), description, timeLimit, memoryLimit, creator);
-        int n = Integer.parseInt(testsCount);
-        for (int i=0;i<n;i++){
-            String input = (String) map.get("input"+i);
-            String output = (String) map.get("output"+i);
-            long testPointId = problemService.addTestPoint(i, input, output, problemId);
-        }
+        // int n = Integer.parseInt(testsCount);
+        String input = (String) map.get("input0");
+        String output = (String) map.get("output0");
+        Assert.isTrue(parseTestCase(input, output, problemId), "输入输出用例长度不等!");
         return new HttpMsg<>(Consts.ServerCode.SUCCESS, null,"题目上传成功");
     }
+
+    private Boolean parseTestCase(String input, String output, long problemId) {
+        String[] inputs = input.split("\n");
+        String[] outputs = output.split("\n");
+        int n = inputs.length < outputs.length ? inputs.length : outputs.length;
+        for (int i = 0; i < n; i++) {
+            long testPointId = problemService.addTestPoint(i, input, output, problemId);
+        }
+        return inputs.length == outputs.length;
+    }
+
 }

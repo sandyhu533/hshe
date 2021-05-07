@@ -28,16 +28,14 @@
     <div class="ui visible inverted left vertical sidebar menu">
       <div class="ui secondary pointing menu">
         <a class="active item">
-          <img src="/img/logo.png" class="ui centered mini image"></img>Master</a>
+          <img src="/img/logo.png" class="ui centered mini image"></img></a>
         <div class="right menu">
-          <a v-on:click="back()" class="ui active item">返回系统 </a>
+          <a v-on:click="back()" class="ui active item">返回 </a>
         </div>
       </div>
       <a class="item">
-        <p>作业管理平台</p>
+        <p></p>
       </a>
-      <a v-on:click="ovactive()" v-bind:class="{ active: active[0] }" class="item">
-        <i class="home icon"></i> 系统概览 </a>
       <a v-on:click="cmactive()" v-bind:class="{ active: active[1] }" class="item">
         <i class="user icon"></i> 班级管理 </a>
       <a v-on:click="smactive()" v-bind:class="{ active: active[2] }" class="item">
@@ -50,55 +48,6 @@
     </div>
     <div class="pusher" style="width:80%">
       <div class="ui basic segment">
-
-
-
-
-
-
-
-
-
-        <template v-if="active[0]">
-          <loader v-if="loading"></loader>
-          <div class="ui segment">
-            <h3 class="ui header">评测机状态</h3>
-            <div class="ui horizontal list">
-
-              <template v-for="container in list_container">
-                <div v-if="container.Image=='image-judge' || container.Image=='image-sim'" class="item">
-                  <img class="ui avatar image" src="/img/server.png"></img>
-                  <div class="content"><div class="header">{{container.Names[0]}}</div>{{container.Status}} </div>
-                </div>
-              </template>
-
-            </div>
-          </div>
-
-          <div class="ui segment">
-            <h3 class="ui header">统计数据</h3>
-            <div class="ui statistics">
-              <div class="statistic">
-                <div class="value">
-                  {{object_statistics.problems}}
-                </div>
-                <div class="label">题目 </div>
-              </div>
-              <div class="statistic">
-                <div class="value">
-                  {{object_statistics.submissions}}
-                </div>
-                <div class="label">提交 </div>
-              </div>
-              <div class="statistic">
-                <div class="value">
-                  {{object_statistics.students}}
-                </div>
-                <div class="label">学生 </div>
-              </div>
-            </div>
-          </div>
-        </template>
 
         <template v-if="active[1]">
           <div class="ui segment">
@@ -280,9 +229,8 @@
                   <td v-if="item.topicStatus==-1">
                     <i class="icon clock"></i> 未开始</td>
                   <td>
-
-                    <a>编辑</a> |
-                    <a v-on:click="analysisactive(item.id)">查看分析</a>
+                    <a :href="'/topic/'+item.id">查看详情 </a>
+                    <a v-on:click="analysisactive(item.id)">| 查看分析</a>
                   </td>
                 </tr>
 
@@ -432,15 +380,14 @@
               </div>
               <div class="fields">
                 <div class="eight wide field">
-                  <label>[测试用例-01] 输入</label>
+                  <label>[测试用例] 输入</label>
                   <textarea v-model="form_problem.input0" rows="3"></textarea>
                 </div>
                 <div class="eight wide field">
-                  <label>[测试用例-01] 输出</label>
+                  <label>[测试用例] 输出</label>
                   <textarea v-model="form_problem.output0" rows="3"></textarea>
                 </div>
               </div>
-              <button class="ui button">增加测试用例</button>
               <button v-on:click="problemadd()" class="ui primary button">提交</button>
             </form>
           </div>
@@ -464,8 +411,8 @@
     var vm = new Vue({
       el: '#app',
       data: {
-        active: [true, false, false, false, false],
-        loaded: [true, false, false, false, false],
+        active: [false, true, false, false, false],
+        loaded: [false, true, false, false, false],
         childactive: false,
         loading: true,
         loading_analysis: true,
@@ -507,7 +454,7 @@
           description: '',
           time_limit: 1000,
           memory_limit: 64,
-          tests_count: 1,
+          tests_count: 1, // deprecated
           input0: '',
           output0: ''
         },
@@ -520,6 +467,7 @@
       created: function () {
         getStatistice();
         getDockerStatus();
+        getClassList();
       },
       methods: {
         back: function () {
@@ -563,7 +511,7 @@
           postClassAdd(this.form_class.name);
         },
         problemadd: function () {
-          postProblemAdd(this.form_problem.title, this.form_problem.topic_flag, this.form_problem.description, this.form_problem.time_limit, this.form_problem.memory_limit, this.form_problem.tests_count, this.form_problem.input0, this.form_problem.output0);
+          postProblemAdd(this.form_problem);
         },
         analysisactive: function (topic_id) {
           this.childactive = true;
@@ -643,6 +591,7 @@
       })
         .then(function (response) {
           vm.form_stu_posting = false;
+          getStulist();
         });
     }
 
@@ -661,6 +610,7 @@
       })
         .then(function (response) {
           vm.form_stu_muti_posting = false;
+          getStulist();
         });
     }
 
@@ -706,6 +656,8 @@
       })
         .then(function (response) {
           vm.form_topic_posting = false;
+          getTopicList();
+          getClassList();
         });
     }
 
@@ -722,29 +674,21 @@
       })
         .then(function (response) {
           vm.form_class_posting = false;
+          getClassList();
         });
     }
 
-
-    function postProblemAdd(title, topic_flag, description, time_limit, memory_limit, tests_count, input0, output0) {
+    function postProblemAdd(problem) {
       vm.form_problem_posting = true;
       axios({
         url: '/api/p',
         method: 'post',
         headers: { 'Access-Token': window.localStorage.getItem("token") },
-        data: {
-          title: title,
-          topic_flag: topic_flag,
-          description: description,
-          time_limit: time_limit,
-          memory_limit: memory_limit,
-          tests_count: tests_count,
-          input0: input0,
-          output0: output0
-        }
+        data: problem,
       })
         .then(function (response) {
           vm.form_problem_posting = false;
+          getTopicList();
         });
     }
 
